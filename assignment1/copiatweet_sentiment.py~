@@ -26,15 +26,15 @@ def findSentiment(filein,filesentiment,scores):
         #convert to JSON
         tweet=json.loads(line)
         #If there's text tag an lang=en
-        if "text" in tweet :
-            print tweet["text"]
-            words=tweet["text"].split(" ")
-            suma=0.0
-            for w in words:
-                if w.lower() in scores:
-                    suma+=scores[w.lower()]
-            print "<sentiment:"+str(suma)+">\n"
-            #filesentiment.write("<sentiment: "+str(suma)+">\n")
+        #if "text" in tweet :
+        print tweet["text"]
+        words=tweet["text"].split(" ")
+        suma=0.0
+        for w in words:
+            if w.lower() in scores:
+                suma+=scores[w.lower()]
+        print "<sentiment:"+str(suma)+">\n"
+        #filesentiment.write("<sentiment: "+str(suma)+">\n")
 
 
 
