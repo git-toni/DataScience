@@ -1,0 +1,38 @@
+import json
+import sys
+
+
+def storeHashtags(tweetfile):
+    alines=tweetfile.readlines()
+    hashes={}
+    for li in alines:
+        #Convert to json
+        tweet=json.loads(li)
+        if "created_at" in tweet:
+            parsed=tweet['entities']['hashtags']
+            for h in parsed:
+                if h['text'] in hashes:
+                    hashes[h['text']]+=1
+                elif h['text'] not in hashes:
+                    hashes[h['text']]=1
+
+    return hashes
+
+def printHashtags(hashes):
+    sorted_hash=sorted(hashes.items(), key=lambda val: val[1],reverse=True)
+    #for h in sorted_hash:
+    for h in range(10):
+        print "%s %.1f"%(h[0],h[1])
+
+def main():
+    tweet_file = open(sys.argv[1])
+    hashtags=storeHashtags(tweet_file)
+    printHashtags(hashtags)
+
+
+
+if __name__ == '__main__':
+    main()
+ 
+
+
