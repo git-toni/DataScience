@@ -12,6 +12,7 @@ def createdictionary(afinnfile):
     scores={}
     for line in afinnfile:
         term,score=line.split("\t") #file tab-delimited
+        term=term.decode('utf-8')
         scores[term]=int(score)
     return scores
 
@@ -34,12 +35,8 @@ def findSentiment(filein,filesentiment,scores):
             for w in words:
                 if w.lower() in scores:
                     suma+=scores[w.lower()]
-            #print "<sentiment:"+str(suma)+">\n"
-        #print "appending"
-        sentiments.append(suma)
-            #print str(suma)
-            #filesentiment.write("<sentiment: "+str(suma)+">\n")
-    #print "mida sentiments "+str(len(sentiments))
+            sentiments.append(suma)
+
     return sentiments
 
 def printSentiments(sentiments):

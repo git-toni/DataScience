@@ -1,0 +1,189 @@
+import json
+import sys
+
+def createdictionary(afinnfile):
+    #afinnfile=open("AFINN-111.txt")
+    scores={}
+    for line in afinnfile:
+        term,score=line.split("\t") #file tab-delimited
+        term=term.decode('utf-8')
+        scores[term]=int(score)
+    return scores
+
+def findLineSentiment(tweet,scores):
+    #If there's text tag an lang=en
+    if "text" in tweet :
+        words=tweet["text"].split(" ")
+        suma=0.0
+        for w in words:
+            if w.lower() in scores:
+                suma+=scores[w.lower()]
+        return True,suma
+    else:
+        return False,0
+
+def termSentiment(filein,scores):
+    #scores: AFINN txt
+    #sentiments: computed tweet sentiments
+    alines=filein.readlines()
+    terms={}
+    for li in range(len(alines)):
+        #Convert to json
+        tweet=json.loads(alines[li])
+        #save computed sentiment of tweet
+        hasmood,mood=findLineSentiment(tweet,scores)
+        if(hasmood):
+            if mood>0:
+                moodindex=1#positive mood
+            elif mood<0:
+                moodindex=2#negativ emood
+            elif mood==0:
+                moodindex=3#neutral mood
+            #separate all words
+            if "text" in tweet.keys():
+                words=tweet["text"].split()
+                for w in words:
+                    w=w.lower()
+                    if w not in scores:
+                        if w in terms:
+                            terms[w][0]+=mood
+                            terms[w][moodindex]+=1
+                        elif w not in terms:
+                            terms[w]=[mood,0,0,0]
+                            terms[w][moodindex]+=1
+    return terms
+
+
+def is_a_State(name,states):#Checks if the input word is the abbreviation of a state
+    if name.upper() in states:
+        return True
+    else:
+        return False
+
+def filter_US_English_Location(tweet,states):
+    #Check whether the tweet is in ENGLISH and from the US
+    text_conditions= ("text" in tweet) and ("lang" in tweet) and (tweet["lang"] == "en")
+    loc_conditions= ("place" in tweet) and (tweet["place"]!=None) and (tweet["place"]["country"] == "United States")
+    #print "post conditions declara"
+    if text_conditions and loc_conditions:
+        if "full_name" in tweet["place"]:
+            allwords=tweet["place"]["full_name"].split()
+            for w in allwords:
+                w=w.upper()
+                if is_a_State(w,states):
+                    return True,w
+    return False,"null"
+
+
+def find_US_Line_sentiment(tweet,scores):
+    words=tweet["text"].split()
+    suma=0.0
+    for w in words:
+        if w.lower() in scores:
+            suma+=scores[w.lower()]
+    return suma
+
+def statesSentiments(tweetfile,scores,states):
+    tweetfile.readline()
+    alines=tweetfile.readlines()
+    happy={}
+    for li in alines:
+        tweet=json.loads(li)
+        isState,stateName=filter_US_English_Location(tweet,states)
+        if isState:
+            mood=find_US_Line_sentiment(tweet,scores)
+            if stateName in happy:
+                happy[stateName][0]+=mood
+                happy[stateName][1]+=1
+            elif stateName not in happy:
+                happy[stateName]=[mood,1]
+
+            #print tweet["text"]+" --------- mood:"+str(mood)
+            #print "\n"
+    return happy
+
+def printHappy(happy):
+    maxim=0.0
+    name="AK"
+    for e in happy:
+        rate=float(happy[e][0])/happy[e][1]
+        if rate>maxim:
+            maxim=rate
+            name=e
+        #print e+": "+str(rate)+" suma:"+str(happy[e][0])+" ntotal:"+str(happy[e][1])
+    print name
+
+def main():
+    states={
+        'AK': 'Alaska',
+        'AL': 'Alabama',
+        'AR': 'Arkansas',
+        'AS': 'American Samoa',
+        'AZ': 'Arizona',
+        'CA': 'California',
+        'CO': 'Colorado',
+        'CT': 'Connecticut',
+        'DC': 'District of Columbia',
+        'DE': 'Delaware',
+        'FL': 'Florida',
+        'GA': 'Georgia',
+        'GU': 'Guam',
+        'HI': 'Hawaii',
+        'IA': 'Iowa',
+        'ID': 'Idaho',
+        'IL': 'Illinois',
+        'IN': 'Indiana',
+        'KS': 'Kansas',
+        'KY': 'Kentucky',
+        'LA': 'Louisiana',
+        'MA': 'Massachusetts',
+        'MD': 'Maryland',
+        'ME': 'Maine',
+        'MI': 'Michigan',
+        'MN': 'Minnesota',
+        'MO': 'Missouri',
+        'MP': 'Northern Mariana Islands',
+        'MS': 'Mississippi',
+        'MT': 'Montana',
+        'NA': 'National',
+        'NC': 'North Carolina',
+        'ND': 'North Dakota',
+        'NE': 'Nebraska',
+        'NH': 'New Hampshire',
+        'NJ': 'New Jersey',
+        'NM': 'New Mexico',
+        'NV': 'Nevada',
+        'NY': 'New York',
+        'OH': 'Ohio',
+        'OK': 'Oklahoma',
+        'OR': 'Oregon',
+        'PA': 'Pennsylvania',
+        'PR': 'Puerto Rico',
+        'RI': 'Rhode Island',
+        'SC': 'South Carolina',
+        'SD': 'South Dakota',
+        'TN': 'Tennessee',
+        'TX': 'Texas',
+        'UT': 'Utah',
+        'VA': 'Virginia',
+        'VI': 'Virgin Islands',
+        'VT': 'Vermont',
+        'WA': 'Washington',
+        'WI': 'Wisconsin',
+        'WV': 'West Virginia',
+        'WY': 'Wyoming'
+    }
+
+    sent_file = open(sys.argv[1])
+    tweet_file = open(sys.argv[2])
+    scores=createdictionary(sent_file)
+
+    happy=statesSentiments(tweet_file,scores,states)
+    printHappy(happy)
+
+
+
+
+
+if __name__ == '__main__':
+    main()
