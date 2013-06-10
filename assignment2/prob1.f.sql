@@ -1,0 +1,26 @@
+--SELECT count(*) FROM Frequency
+--WHERE (term='transactions' AND term='world');
+--select count(*) from (
+--select distinct docid from (
+--SELECT * from frequency where term='world'
+--union
+--select * from frequency where term='transactions'
+--group by docid
+----)
+--)
+--;
+--select count(*) from (
+--select distinct docid from (
+--SELECT * from frequency where term='sumita'
+--union
+--select * from frequency where term='satoshi'
+--group by docid
+----)
+--)
+--)
+--;
+SELECT count(*) FROM (
+SELECT docid FROM Frequency WHERE term='world'
+INTERSECT
+SELECT docid FROM Frequency WHERE term='transactions'
+);
