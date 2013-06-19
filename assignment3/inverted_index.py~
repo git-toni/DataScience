@@ -16,6 +16,7 @@ def mapper(record):
     key = record[0]
     value = record[1]
     words = value.split()
+    words = list(set(words))
     for w in words:
       mr.emit_intermediate(w, key)
       #mr.emit_intermediate(w, 1)

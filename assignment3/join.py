@@ -29,8 +29,11 @@ def reducer(key, list_of_values):
     #NOW APPENDING ALL FIELDS TO TOTAL
     total = []
     for v in list_of_values:
+      #total.append(key)  
       total.append(v)
-    mr.emit((key, total))
+
+    #mr.emit((key, total))
+    mr.emit((total))
 
 # Do not modify below this line
 # =============================
